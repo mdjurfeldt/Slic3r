@@ -1,3 +1,5 @@
+# DLP Projector screen for the SLA process
+
 package Slic3r::GUI::Projector;
 use strict;
 use warnings;

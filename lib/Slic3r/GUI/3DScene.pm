@@ -1,3 +1,5 @@
+# The following packages are defined here: 3DScene::Base, 3DScene::Volume, 3DScene.
+
 package Slic3r::GUI::3DScene::Base;
 use strict;
 use warnings;

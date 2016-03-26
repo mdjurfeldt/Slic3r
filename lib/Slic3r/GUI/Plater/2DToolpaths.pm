@@ -1,3 +1,6 @@
+# 2D preview of the tool paths of a single layer, using a thin line.
+# OpenGL is used to render the paths.
+
 package Slic3r::GUI::Plater::2DToolpaths;
 use strict;
 use warnings;
@@ -51,9 +54,11 @@ sub new {
         
         my $key = $event->GetKeyCode;
         if ($key == 85 || $key == 315) {
+            # Keys: 'D' or WXK_LEFT
             $slider->SetValue($slider->GetValue + 1);
             $self->set_z($self->{layers_z}[$slider->GetValue]);
         } elsif ($key == 68 || $key == 317) {
+            # Keys: 'U' or WXK_RIGHT
             $slider->SetValue($slider->GetValue - 1);
             $self->set_z($self->{layers_z}[$slider->GetValue]);
         }
@@ -302,6 +307,7 @@ sub Render {
         glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
     }
     
+    # Tesselator triangulates polygons with holes on the fly for the rendering purposes only.
     my $tess;
     if (!(&Wx::wxMSW && $OpenGL::VERSION < 0.6704)) {
         # We can't use the GLU tesselator on MSW with older OpenGL versions
@@ -329,7 +335,7 @@ sub Render {
             glTranslatef(@$copy, 0);
             
             foreach my $slice (@{$layer->slices}) {
-                glColor3f(0.95, 0.95, 0.95);
+                glColor3f(0.75, 0.75, 0.75);
                 
                 if ($tess) {
                     gluTessBeginPolygon($tess);
@@ -542,6 +548,7 @@ sub Resize {
     glMatrixMode(GL_MODELVIEW);
 }
 
+# Thick line drawing is not used anywhere. Probably not tested?
 sub line {
     my (
         $x1, $y1, $x2, $y2,     # coordinates of the line
@@ -551,6 +558,8 @@ sub line {
                                 # Br=alpha of color when alphablend=true
         $alphablend,            # use alpha blend or not
     ) = @_;
+
+    die 'Inside 2DToolpaths::line(). This was not expected to be called.';
     
     my $t;
     my $R;
@@ -719,6 +728,8 @@ sub line {
 }
 
 
+# What is the purpose of this dialog? Testing? A stand-alone application?
+# Currently this dialog is not instantiated.
 package Slic3r::GUI::Plater::2DToolpaths::Dialog;
 
 use Wx qw(:dialog :id :misc :sizer);

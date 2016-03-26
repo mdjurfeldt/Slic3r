@@ -1,3 +1,6 @@
+# A 2D cut in YZ plane through the toolpaths.
+# For debugging purposes.
+
 package Slic3r::Test::SectionCut;
 use Moo;
 

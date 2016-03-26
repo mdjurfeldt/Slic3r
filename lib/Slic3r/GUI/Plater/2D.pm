@@ -1,3 +1,6 @@
+# 2D preview on the platter.
+# It currently does not work correctly.
+
 package Slic3r::GUI::Plater::2D;
 use strict;
 use warnings;

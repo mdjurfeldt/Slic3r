@@ -1,3 +1,5 @@
+# Self explaining: The About Dialog opens from menu Help -> About Slic3r
+
 package Slic3r::GUI::AboutDialog;
 use strict;
 use warnings;

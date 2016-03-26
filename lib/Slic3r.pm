@@ -24,6 +24,9 @@ BEGIN {
     ### temporarily disable threads if using the broken Moo version
     use Moo;
     $have_threads = 0 if $Moo::VERSION == 1.003000;
+    
+    #FIXME Vojtech: For debugging purposes, disable multi threading.
+    #$have_threads = 0;
 }
 
 warn "Running Slic3r under Perl 5.16 is not supported nor recommended\n"
