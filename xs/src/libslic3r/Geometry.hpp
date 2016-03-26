@@ -41,7 +41,6 @@ Pointfs arrange(size_t total_parts, Pointf part, coordf_t dist, const BoundingBo
 
 class MedialAxis {
     public:
-    Points points;
     Lines lines;
     double max_width;
     double min_width;
@@ -55,7 +54,25 @@ class MedialAxis {
     Line edge_to_line(const VD::edge_type &edge) const;
     void process_edge_neighbors(const voronoi_diagram<double>::edge_type& edge, Points* points);
     bool is_valid_edge(const voronoi_diagram<double>::edge_type& edge) const;
-    const Line& retrieve_segment(const voronoi_diagram<double>::cell_type& cell) const;
+};
+
+class MedialAxis2 {
+public:
+    Lines lines;
+    double max_width;
+    double min_width;
+    MedialAxis2(double _max_width, double _min_width) : max_width(_max_width), min_width(_min_width) {};
+    void build(Polylines* polylines);
+    
+private:
+    class VD : public voronoi_diagram<double> {
+    public:
+        typedef double                                          coord_type;
+        typedef boost::polygon::point_data<coordinate_type>     point_type;
+        typedef boost::polygon::segment_data<coordinate_type>   segment_type;
+        typedef boost::polygon::rectangle_data<coordinate_type> rect_type;
+    };
+    VD vd;
 };
 
 } }
