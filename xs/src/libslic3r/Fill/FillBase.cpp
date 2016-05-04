@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "../ClipperUtils.hpp"
 #include "../Surface.hpp"
 

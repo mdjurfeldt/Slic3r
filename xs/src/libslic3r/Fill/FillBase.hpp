@@ -3,6 +3,7 @@
 
 #include <memory.h>
 #include <float.h>
+#include <stdint.h>
 
 #include "../libslic3r.h"
 #include "../BoundingBox.hpp"

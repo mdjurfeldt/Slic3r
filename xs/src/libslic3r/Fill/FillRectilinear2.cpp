@@ -1,7 +1,5 @@
-//FIXME
-#define SLIC3R_DEBUG
-
 #include <assert.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -65,7 +63,7 @@ enum Orientation
 // which means, the coord_t types must not have some of the topmost bits utilized.
 static inline Orientation orient(const Point &a, const Point &b, const Point &c)
 {
-    BOOST_STATIC_ASSERT(sizeof(coord_t) * 2 == sizeof(int64_t));
+    // BOOST_STATIC_ASSERT(sizeof(coord_t) * 2 == sizeof(int64_t));
     int64_t u = int64_t(b.x) * int64_t(c.y) - int64_t(b.y) * int64_t(c.x);
     int64_t v = int64_t(a.x) * int64_t(c.y) - int64_t(a.y) * int64_t(c.x);
     int64_t w = int64_t(a.x) * int64_t(b.y) - int64_t(a.y) * int64_t(b.x);
@@ -417,7 +415,7 @@ static inline int intersection_on_prev_vertical_line(
     return intersection_on_prev_next_vertical_line(poly_with_offset, segs, iVerticalLine, iInnerContour, iIntersection, false);
 }
 
-static inline intersection_on_next_vertical_line(
+static inline int intersection_on_next_vertical_line(
     const ExPolygonWithOffset                     &poly_with_offset, 
     const std::vector<SegmentedIntersectionLine>  &segs, 
     size_t                                         iVerticalLine, 
@@ -465,7 +463,7 @@ static inline int intersection_unused_on_prev_next_vertical_line(
     return iIntersectionOther;
 }
 
-static inline intersection_unused_on_prev_vertical_line(
+static inline int intersection_unused_on_prev_vertical_line(
     const ExPolygonWithOffset                     &poly_with_offset, 
     const std::vector<SegmentedIntersectionLine>  &segs, 
     size_t                                         iVerticalLine, 
@@ -475,7 +473,7 @@ static inline intersection_unused_on_prev_vertical_line(
     return intersection_unused_on_prev_next_vertical_line(poly_with_offset, segs, iVerticalLine, iInnerContour, iIntersection, false);
 }
 
-static inline intersection_unused_on_next_vertical_line(
+static inline int intersection_unused_on_next_vertical_line(
     const ExPolygonWithOffset                     &poly_with_offset, 
     const std::vector<SegmentedIntersectionLine>  &segs, 
     size_t                                         iVerticalLine, 
