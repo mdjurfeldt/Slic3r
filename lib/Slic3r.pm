@@ -176,7 +176,7 @@ sub thread_cleanup {
         warn "Calling thread_cleanup() from main thread\n";
         return;
     }
-    
+
     # prevent destruction of shared objects
     no warnings 'redefine';
     *Slic3r::BridgeDetector::DESTROY        = sub {};
@@ -195,7 +195,7 @@ sub thread_cleanup {
     *Slic3r::ExtrusionPath::Collection::DESTROY = sub {};
     *Slic3r::ExtrusionSimulator::DESTROY    = sub {};
     *Slic3r::Flow::DESTROY                  = sub {};
-    *Slic3r::Filler::Destroy                = sub {};
+    *Slic3r::Filler::DESTROY                = sub {};
     *Slic3r::GCode::DESTROY                 = sub {};
     *Slic3r::GCode::AvoidCrossingPerimeters::DESTROY = sub {};
     *Slic3r::GCode::OozePrevention::DESTROY = sub {};

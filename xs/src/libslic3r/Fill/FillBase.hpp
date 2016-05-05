@@ -100,7 +100,10 @@ class Filler
 {
 public:
     Filler() : fill(NULL) {}
-    ~Filler() { delete fill; fill = NULL; }
+    ~Filler() {
+    	delete fill;
+    	fill = NULL;
+    }
     Fill        *fill;
     FillParams   params;
 };

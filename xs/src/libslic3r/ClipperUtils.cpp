@@ -1,7 +1,7 @@
 #include "ClipperUtils.hpp"
 #include "Geometry.hpp"
 
-#define CLIPPER_UTILS_DEBUG
+// #define CLIPPER_UTILS_DEBUG
 
 #ifdef CLIPPER_UTILS_DEBUG
 #include "SVG.hpp"

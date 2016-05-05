@@ -92,7 +92,7 @@ std::pair<float, Point> Fill::_infill_direction(const Surface *surface) const
         // alternate fill direction
         out_angle += this->_layer_angle(this->layer_id / surface->thickness_layers);
     } else {
-    	printf("Layer_ID undefined!\n");
+//    	printf("Layer_ID undefined!\n");
     }
 
     out_angle += float(M_PI/2.);
