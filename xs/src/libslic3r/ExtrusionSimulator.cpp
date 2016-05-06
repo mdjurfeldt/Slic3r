@@ -640,7 +640,7 @@ struct Cell
 	// Height of the covered part in excess to the expected layer height.
 	float excess_height;
 
-	bool operator<(const Cell &c2) {
+	bool operator<(const Cell &c2) const {
 		return this->excess_height < c2.excess_height;
 	}
 };
