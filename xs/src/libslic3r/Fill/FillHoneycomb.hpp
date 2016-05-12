@@ -48,7 +48,7 @@ protected:
     typedef std::map<CacheID, CacheData> Cache;
 	Cache cache;
 
-    virtual float _layer_angle(size_t idx) const { return 0.5f * float(M_PI) * (idx % 3); }
+    virtual float _layer_angle(size_t idx) const { return float(M_PI/3.) * (idx % 3); }
 };
 
 } // namespace Slic3r

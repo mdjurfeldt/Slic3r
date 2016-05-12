@@ -16,9 +16,6 @@ void FillRectilinear::_fill_surface_single(
 {
     // rotate polygons so that we can work with vertical lines here
     expolygon.rotate(- direction.first);
-    // No need to translate the polygon anyhow for the infill.
-    // The infill will be performed inside a bounding box of the expolygon and its absolute position does not matter.
-//    expolygon.translate(direction.second.x, direction.second.y);
 
     this->_min_spacing = scale_(this->spacing);
     assert(params.density > 0.0001f && params.density <= 1.f);
@@ -33,9 +30,11 @@ void FillRectilinear::_fill_surface_single(
         this->spacing = unscale(this->_line_spacing);
     } else {
         // extend bounding box so that our pattern will be aligned with other layers
-        bounding_box.merge(Point(
-            bounding_box.min.x - (bounding_box.min.x % this->_line_spacing),
-            bounding_box.min.y - (bounding_box.min.y % this->_line_spacing)));
+        // Transform the reference point to the rotated coordinate system.
+        bounding_box.merge(_align_to_grid(
+            bounding_box.min, 
+            Point(this->_line_spacing, this->_line_spacing), 
+            direction.second.rotated(- direction.first)));
     }
 
     // generate the basic pattern

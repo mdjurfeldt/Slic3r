@@ -43,6 +43,8 @@ class Point
     void translate(const Vector &vector);
     void rotate(double angle);
     void rotate(double angle, const Point &center);
+    Point rotated(double angle) const { Point res(*this); res.rotate(angle); return res; }
+    Point rotated(double angle, const Point &center) const { Point res(*this); res.rotate(angle, center); return res; }
     bool coincides_with(const Point &point) const;
     bool coincides_with_epsilon(const Point &point) const;
     int nearest_point_index(const Points &points) const;

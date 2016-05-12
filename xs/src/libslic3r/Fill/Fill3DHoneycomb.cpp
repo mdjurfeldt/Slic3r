@@ -87,7 +87,7 @@ static std::vector<Pointfs> makeNormalisedGrid(coordf_t z, size_t gridWidth, siz
     
     // sawtooth wave function for range f($z) = [-$octagramGap .. $octagramGap]
     coordf_t a = std::sqrt(coordf_t(2.));  // period
-    coordf_t wave = abs(fmod(z, a) - a/2.)/a*4. - 1.;
+    coordf_t wave = fabs(fmod(z, a) - a/2.)/a*4. - 1.;
     coordf_t offset = wave * octagramGap;
     
     std::vector<Pointfs> points;
@@ -154,9 +154,7 @@ void Fill3DHoneycomb::_fill_surface_single(
     // align bounding box to a multiple of our honeycomb grid module
     // (a module is 2*$distance since one $distance half-module is 
     // growing while the other $distance half-module is shrinking)
-    bb.merge(Point(
-        bb.min.x - (bb.min.x % (2*distance)),
-        bb.min.y - (bb.min.y % (2*distance))));
+    bb.merge(_align_to_grid(bb.min, Point(2*distance, 2*distance)));
     
     // generate pattern
     Polylines polylines = makeGrid(

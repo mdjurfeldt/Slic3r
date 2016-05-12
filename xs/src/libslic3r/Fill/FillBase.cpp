@@ -56,15 +56,21 @@ Polylines Fill::fill_surface(const Surface *surface, const FillParams &params)
     return polylines_out;
 }
 
+// Calculate a new spacing to fill width with possibly integer number of lines,
+// the first and last line being centered at the interval ends.
+//FIXME Vojtech: This 
+// This function possibly increases the spacing, never decreases, 
+// and for a narrow width the increase in spacing may become severe!
 coord_t Fill::_adjust_solid_spacing(const coord_t width, const coord_t distance)
 {
-    coord_t number_of_lines = coord_t(coordf_t(width) / coordf_t(distance)) + 1;
-    coord_t extra_space     = width % distance;
-    return (number_of_lines <= 1) ? 
+    coord_t number_of_intervals = coord_t(coordf_t(width) / coordf_t(distance));
+    return (number_of_intervals == 0) ? 
         distance : 
-        distance + extra_space / (number_of_lines - 1);
+        (width / number_of_intervals);
 }
 
+// Returns orientation of the infill and the reference point of the infill pattern.
+// For a normal print, the reference point is the center of a bounding box of the STL.
 std::pair<float, Point> Fill::_infill_direction(const Surface *surface) const
 {
     // set infill angle
@@ -76,9 +82,19 @@ std::pair<float, Point> Fill::_infill_direction(const Surface *surface) const
         out_angle = 0.f;
     }
 
+    // Bounding box is the bounding box of a perl object Slic3r::Print::Object (c++ object Slic3r::PrintObject)
+    // The bounding box is only undefined in unit tests.
     Point out_shift = empty(this->bounding_box) ? 
     	surface->expolygon.contour.bounding_box().center() : 
         this->bounding_box.center();
+
+#if 0
+    if (empty(this->bounding_box)) {
+        printf("Fill::_infill_direction: empty bounding box!");
+    } else {
+        printf("Fill::_infill_direction: reference point %d, %d\n", out_shift.x, out_shift.y);
+    }
+#endif
 
     if (surface->bridge_angle >= 0) {
 	    // use bridge angle

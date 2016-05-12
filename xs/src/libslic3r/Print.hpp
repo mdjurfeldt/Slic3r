@@ -152,6 +152,7 @@ class PrintObject
 typedef std::vector<PrintObject*> PrintObjectPtrs;
 typedef std::vector<PrintRegion*> PrintRegionPtrs;
 
+// The complete print tray with possibly multiple objects.
 class Print
 {
     public:

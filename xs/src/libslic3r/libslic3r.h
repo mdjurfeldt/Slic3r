@@ -72,6 +72,11 @@ using namespace Slic3r;
         ((expr)                \
         ? static_cast<void>(0) \
         : assert_fail (#expr, __FILE__, __LINE__, __FUNCTION__))
+
+    #define myassert(expr)     \
+        ((expr)                \
+        ? static_cast<void>(0) \
+        : assert_fail (#expr, __FILE__, __LINE__, __FUNCTION__))
     
     static inline void my_confess_at(const char *file, unsigned line, const char *function, const char* format, ...)
     {
@@ -95,6 +100,7 @@ using namespace Slic3r;
 	#define CONFESS(...) confess_at(__FILE__, __LINE__, __func__, __VA_ARGS__)
 	void confess_at(const char *file, int line, const char *func, const char *pat, ...);
 	/* End implementation of CONFESS("foo"): */
+    #define myassert(expr) do { } while (0)
 #endif /* SLIC3R_DEBUG */
 
 

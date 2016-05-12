@@ -18,9 +18,8 @@ void FillPlanePath::_fill_surface_single(
     coord_t distance_between_lines = scale_(this->spacing) / params.density;
     
     // align infill across layers using the object's bounding box
-    Polygon bb_polygon = this->bounding_box.polygon();
-    bb_polygon.rotate(- direction.first);
-    BoundingBox bounding_box = bb_polygon.bounding_box();
+    // Rotated bounding box of the whole object.
+    BoundingBox bounding_box = this->bounding_box.rotated(- direction.first);
     
     Point shift = this->_centered() ? 
         bounding_box.center() :

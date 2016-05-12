@@ -27,6 +27,7 @@ sub filler {
 
 sub make_fill {
     my $self = shift;
+    # of type - C++: LayerRegion, Perl: Slic3r::Layer
     my ($layerm) = @_;
     
     Slic3r::debugf "Filling layer %d:\n", $layerm->layer->id;
@@ -36,6 +37,7 @@ sub make_fill {
     my $solid_infill_flow       = $layerm->flow(FLOW_ROLE_SOLID_INFILL);
     my $top_solid_infill_flow   = $layerm->flow(FLOW_ROLE_TOP_SOLID_INFILL);
     
+    # Surfaces are of the type Slic3r::Surface
     my @surfaces = ();
     
     # merge adjacent surfaces
@@ -45,6 +47,7 @@ sub make_fill {
         my @surfaces_with_bridge_angle = grep { $_->bridge_angle >= 0 } @{$layerm->fill_surfaces};
         
         # group surfaces by distinct properties
+        # group is of type Slic3r::SurfaceCollection
         my @groups = @{$layerm->fill_surfaces->group};
         
         # merge compatible groups (we can generate continuous infill for them)
@@ -94,9 +97,10 @@ sub make_fill {
         @groups = sort { ($a->[0]->bridge_angle >= 0) ? -1 : 0 } @groups;
         
         foreach my $group (@groups) {
+            # Make a union of polygons defining the infiill regions of a group, use a safety offset.
             my $union_p = union([ map $_->p, @$group ], 1);
             
-            # subtract surfaces having a defined bridge_angle from any other
+            # Subtract surfaces having a defined bridge_angle from any other, use a safety offset.
             if (@surfaces_with_bridge_angle && $group->[0]->bridge_angle < 0) {
                 $union_p = diff(
                     $union_p,
@@ -106,6 +110,7 @@ sub make_fill {
             }
             
             # subtract any other surface already processed
+            #FIXME Vojtech: Because the bridge surfaces came first, they are subtracted twice!
             my $union = diff_ex(
                 $union_p,
                 [ map $_->p, @surfaces ],
@@ -157,6 +162,7 @@ sub make_fill {
         );
     }
     
+    # Fills are of perl type Slic3r::ExtrusionPath::Collection, c++ type ExtrusionEntityCollection
     my @fills = ();
     SURFACE: foreach my $surface (@surfaces) {
         next if $surface->surface_type == S_TYPE_INTERNALVOID;
@@ -241,8 +247,7 @@ sub make_fill {
                 bridge          => $is_bridge || $f->use_bridge_flow,
             );
         }
-        my $mm3_per_mm = $flow->mm3_per_mm;
-        
+
         # save into layer
         {
             my $role = $is_bridge ? EXTR_ROLE_BRIDGE
@@ -250,12 +255,13 @@ sub make_fill {
                 : EXTR_ROLE_FILL;
             
             push @fills, my $collection = Slic3r::ExtrusionPath::Collection->new;
+            # Only concentric fills are not sorted.
             $collection->no_sort($f->no_sort);
             $collection->append(
                 map Slic3r::ExtrusionPath->new(
                     polyline    => $_,
                     role        => $role,
-                    mm3_per_mm  => $mm3_per_mm,
+                    mm3_per_mm  => $flow->mm3_per_mm,
                     width       => $flow->width,
                     height      => $flow->height,
                 ), map @$_, @polylines,
@@ -264,6 +270,10 @@ sub make_fill {
     }
     
     # add thin fill regions
+    # thin_fills are of C++ Slic3r::ExtrusionEntityCollection, perl type Slic3r::ExtrusionPath::Collection
+    # Unpacks the collection, creates multiple collections per path.
+    # The path type could be ExtrusionPath, ExtrusionLoop or ExtrusionEntityCollection.
+    # Why the paths are unpacked?
     foreach my $thin_fill (@{$layerm->thin_fills}) {
         push @fills, Slic3r::ExtrusionPath::Collection->new($thin_fill);
     }

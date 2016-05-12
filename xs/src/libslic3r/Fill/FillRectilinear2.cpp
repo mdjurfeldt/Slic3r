@@ -18,6 +18,9 @@
 #include "SVG.hpp"
 #endif
 
+// We want our version of assert.
+#include "../libslic3r.h"
+
 namespace Slic3r {
 
 #ifndef clamp
@@ -76,7 +79,7 @@ static inline Orientation orient(const Point &a, const Point &b, const Point &c)
 static inline bool is_ccw(const Polygon &poly)
 {
     // The polygon shall be at least a triangle.
-    assert(poly.points.size() >= 3);
+    myassert(poly.points.size() >= 3);
     if (poly.points.size() < 3)
         return true;
 
@@ -95,7 +98,7 @@ static inline bool is_ccw(const Polygon &poly)
     Orientation o = orient(poly.points[iPrev], poly.points[imin], poly.points[iNext]);
     // The lowest bottom point must not be collinear if the polygon does not contain duplicate points
     // or overlapping segments.
-    assert(o != ORIENTATION_COLINEAR);
+    myassert(o != ORIENTATION_COLINEAR);
     return o == ORIENTATION_CCW;
 }
 
@@ -116,8 +119,8 @@ static inline coordf_t segment_length(const Polygon &poly, size_t seg1, const Po
             std::swap(pa.x, pb.x);
         if (pa.y > pb.y)
             std::swap(pa.y, pb.y);
-        assert(px.x >= pa.x && px.x <= pb.x);
-        assert(px.y >= pa.y && px.y <= pb.y);
+        myassert(px.x >= pa.x && px.x <= pb.x);
+        myassert(px.y >= pa.y && px.y <= pb.y);
     }
 #endif /* SLIC3R_DEBUG */
     const Point *pPrev = &p1;
@@ -259,9 +262,9 @@ public:
         // for the infill pattern, don't cut the corners.
         // default miterLimt = 3
         //double mitterLimit = 10.;
-        assert(aoffset1 < 0);
-        assert(aoffset2 < 0);
-        assert(aoffset2 < aoffset1);
+        myassert(aoffset1 < 0);
+        myassert(aoffset2 < 0);
+        myassert(aoffset2 < aoffset1);
         polygons_outer = offset(polygons_src, aoffset1,
             CLIPPER_OFFSET_SCALE,
             ClipperLib::jtMiter,
@@ -276,7 +279,7 @@ public:
         polygons_ccw.assign(n_contours, false);
         for (size_t i = 0; i < n_contours; ++ i) {
             contour(i).remove_duplicate_points();
-            assert(! contour(i).has_duplicate_points());
+            myassert(! contour(i).has_duplicate_points());
             polygons_ccw[i] = is_ccw(contour(i));
         }
     }
@@ -373,23 +376,23 @@ static inline int intersection_on_prev_next_vertical_line(
         if (itsct.iContour == itsct2.iContour && itsct.type == itsct2.type) {
             /*
             if (itsct.is_low()) {
-                assert(itsct.type == SegmentIntersection::INNER_LOW);
-                assert(iIntersection > 0);
-                assert(il.intersections[iIntersection-1].type == SegmentIntersection::OUTER_LOW);                
-                assert(i > 0);
+                myassert(itsct.type == SegmentIntersection::INNER_LOW);
+                myassert(iIntersection > 0);
+                myassert(il.intersections[iIntersection-1].type == SegmentIntersection::OUTER_LOW);                
+                myassert(i > 0);
                 if (il2.intersections[i-1].is_inner())
                     // Take only the lowest inner intersection point.
                     continue;
-                assert(il2.intersections[i-1].type == SegmentIntersection::OUTER_LOW);
+                myassert(il2.intersections[i-1].type == SegmentIntersection::OUTER_LOW);
             } else {
-                assert(itsct.type == SegmentIntersection::INNER_HIGH);
-                assert(iIntersection+1 < il.intersections.size());
-                assert(il.intersections[iIntersection+1].type == SegmentIntersection::OUTER_HIGH);
-                assert(i+1 < il2.intersections.size());
+                myassert(itsct.type == SegmentIntersection::INNER_HIGH);
+                myassert(iIntersection+1 < il.intersections.size());
+                myassert(il.intersections[iIntersection+1].type == SegmentIntersection::OUTER_HIGH);
+                myassert(i+1 < il2.intersections.size());
                 if (il2.intersections[i+1].is_inner())
                     // Take only the highest inner intersection point.
                     continue;
-                assert(il2.intersections[i+1].type == SegmentIntersection::OUTER_HIGH);
+                myassert(il2.intersections[i+1].type == SegmentIntersection::OUTER_HIGH);
             }
             */
             // The intersection points lie on the same contour and have the same orientation.
@@ -439,21 +442,21 @@ static inline int intersection_unused_on_prev_next_vertical_line(
     int iIntersectionOther = intersection_on_prev_next_vertical_line(poly_with_offset, segs, iVerticalLine, iInnerContour, iIntersection, dir_is_next);
     if (iIntersectionOther == -1)
         return -1;
-    assert(dir_is_next ? (iVerticalLine + 1 < segs.size()) : (iVerticalLine > 0));
+    myassert(dir_is_next ? (iVerticalLine + 1 < segs.size()) : (iVerticalLine > 0));
     const SegmentedIntersectionLine &il_this      = segs[iVerticalLine];
     const SegmentIntersection       &itsct_this   = il_this.intersections[iIntersection];
     const SegmentedIntersectionLine &il_other     = segs[dir_is_next ? (iVerticalLine+1) : (iVerticalLine-1)];
     const SegmentIntersection       &itsct_other  = il_other.intersections[iIntersectionOther];
-    assert(itsct_other.is_inner());
-    assert(iIntersectionOther > 0);
-    assert(iIntersectionOther + 1 < il_other.intersections.size());
+    myassert(itsct_other.is_inner());
+    myassert(iIntersectionOther > 0);
+    myassert(iIntersectionOther + 1 < il_other.intersections.size());
     // Is iIntersectionOther at the boundary of a vertical segment?
     const SegmentIntersection       &itsct_other2 = il_other.intersections[itsct_other.is_low() ? iIntersectionOther - 1 : iIntersectionOther + 1];
     if (itsct_other2.is_inner())
         // Cannot follow a perimeter segment into the middle of another vertical segment.
         // Only perimeter segments connecting to the end of a vertical segment are followed.
         return -1;
-    assert(itsct_other.is_low() == itsct_other2.is_low());
+    myassert(itsct_other.is_low() == itsct_other2.is_low());
     if (dir_is_next ? itsct_this.consumed_perimeter_right : itsct_other.consumed_perimeter_right)
         // This perimeter segment was already consumed.
         return -1;
@@ -509,9 +512,9 @@ static inline coordf_t measure_perimeter_prev_next_segment_length(
     const SegmentIntersection       &itsct2 = il2.intersections[iIntersection2];
     const Polygon                   &poly   = poly_with_offset.contour(iInnerContour);
 //    const bool                       ccw    = poly_with_offset.is_contour_ccw(iInnerContour);
-    assert(itsct.type == itsct2.type);
-    assert(itsct.iContour == itsct2.iContour);
-    assert(itsct.is_inner());
+    myassert(itsct.type == itsct2.type);
+    myassert(itsct.iContour == itsct2.iContour);
+    myassert(itsct.is_inner());
     const bool                       forward = itsct.is_low() == dir_is_next;
 
     Point p1(il.pos, itsct.pos);
@@ -559,9 +562,9 @@ static inline void emit_perimeter_prev_next_segment(
     size_t iVerticalLineOther = iVerticalLine;
     if (dir_is_next) {
         ++ iVerticalLineOther;
-        assert(iVerticalLineOther < segs.size());
+        myassert(iVerticalLineOther < segs.size());
     } else {
-        assert(iVerticalLineOther > 0);
+        myassert(iVerticalLineOther > 0);
         -- iVerticalLineOther;
     }
 
@@ -571,9 +574,9 @@ static inline void emit_perimeter_prev_next_segment(
     const SegmentIntersection       &itsct2 = il2.intersections[iIntersection2];
     const Polygon                   &poly   = poly_with_offset.contour(iInnerContour);
 //    const bool                       ccw    = poly_with_offset.is_contour_ccw(iInnerContour);
-    assert(itsct.type == itsct2.type);
-    assert(itsct.iContour == itsct2.iContour);
-    assert(itsct.is_inner());
+    myassert(itsct.type == itsct2.type);
+    myassert(itsct.iContour == itsct2.iContour);
+    myassert(itsct.is_inner());
     const bool                       forward = itsct.is_low() == dir_is_next;
     // Do not append the first point.
     // out.points.push_back(Point(il.pos, itsct.pos));
@@ -593,14 +596,14 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
     // Shrink the input polygon a bit first to not push the infill lines out of the perimeters.
 //    const float INFILL_OVERLAP_OVER_SPACING = 0.3f;
     const float INFILL_OVERLAP_OVER_SPACING = 0.45f;
-    assert(INFILL_OVERLAP_OVER_SPACING > 0 && INFILL_OVERLAP_OVER_SPACING < 0.5f);
+    myassert(INFILL_OVERLAP_OVER_SPACING > 0 && INFILL_OVERLAP_OVER_SPACING < 0.5f);
 
     // Rotate polygons so that we can work with vertical lines here
     std::pair<float, Point> rotate_vector = this->_infill_direction(surface);
     rotate_vector.first += angleBase;
 
     this->_min_spacing = scale_(this->spacing);
-    assert(params.density > 0.0001f && params.density <= 1.f);
+    myassert(params.density > 0.0001f && params.density <= 1.f);
     this->_line_spacing = coord_t(coordf_t(this->_min_spacing) / params.density);
     this->_diagonal_distance = this->_line_spacing * 2;
 
@@ -624,9 +627,11 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
 //        this->spacing = unscale(this->_line_spacing);
     } else {
         // extend bounding box so that our pattern will be aligned with other layers
-        bounding_box.merge(Point(
-            bounding_box.min.x - (bounding_box.min.x % this->_line_spacing),
-            bounding_box.min.y - (bounding_box.min.y % this->_line_spacing)));
+        // Transform the reference point to the rotated coordinate system.
+        bounding_box.merge(_align_to_grid(
+            bounding_box.min, 
+            Point(this->_line_spacing, this->_line_spacing), 
+            rotate_vector.second.rotated(- rotate_vector.first)));
     }
 
     // Intersect a set of euqally spaced vertical lines wiht expolygon.
@@ -692,8 +697,8 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
             if (il > ir)
                 // No vertical line intersects this segment.
                 continue;
-            assert(il >= 0 && il < segs.size());
-            assert(ir >= 0 && ir < segs.size());
+            myassert(il >= 0 && il < segs.size());
+            myassert(ir >= 0 && ir < segs.size());
             if (l == r) {
                 // The segment is vertical.
                 // Don't insert vertical segments at all.
@@ -714,18 +719,18 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                 SegmentIntersection is;
                 is.iContour = iContour;
                 is.iSegment = iSegment;
-                assert(l <= segs[i].pos);
-                assert(r >= segs[i].pos);
+                myassert(l <= segs[i].pos);
+                myassert(r >= segs[i].pos);
                 // Calculate the intersection position in y axis. x is known.
                 double t = double(segs[i].pos - p1.x) / double(p2.x - p1.x);
-                assert(t > -0.000001 && t < 1.000001);
+                myassert(t > -0.000001 && t < 1.000001);
                 t = clamp(0., 1., t);
                 coord_t lo = p1.y;
                 coord_t hi = p2.y;
                 if (lo > hi)
                     std::swap(lo, hi);
                 is.pos = p1.y + coord_t(t * double(p2.y - p1.y));
-                assert(is.pos > lo - 0.000001 && is.pos < hi + 0.000001);
+                myassert(is.pos > lo - 0.000001 && is.pos < hi + 0.000001);
                 is.pos = clamp(lo, hi, is.pos);
                 segs[i].intersections.push_back(is);
             }
@@ -754,7 +759,7 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                 bool   swap = false;
                 if (iContour1 == iContour2 && iSegment1 == iSegment2) {
                     // The same segment, it has to be vertical.
-                    assert(iPrev1 == iPrev2);
+                    myassert(iPrev1 == iPrev2);
                     swap = contour1[iPrev1].y > contour1[iContour1].y;
                     #ifdef SLIC3R_DEBUG
                     if (swap)
@@ -782,10 +787,10 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                         	std::swap(a, b);
                         if (c->x > d->x)
                             std::swap(c, d);
-                        assert(a->x <= sil.pos);
-                        assert(c->x <= sil.pos);
-                        assert(b->x >= sil.pos);
-                        assert(d->x >= sil.pos);
+                        myassert(a->x <= sil.pos);
+                        myassert(c->x <= sil.pos);
+                        myassert(b->x >= sil.pos);
+                        myassert(d->x >= sil.pos);
                         // Sort the two segments, so the segment <a,b> will be on the left of <c,d>.
                         bool upper_more_left = false;
                         if (a->x > c->x) {
@@ -795,10 +800,10 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                         }
                         if (a == c) {
                         	// The segments iSegment1 and iSegment2 are directly connected.
-                            assert(iContour1 == iContour2);
-                            assert(iSegment1 == iPrev2 || iPrev1 == iSegment2);
+                            myassert(iContour1 == iContour2);
+                            myassert(iSegment1 == iPrev2 || iPrev1 == iSegment2);
                             std::swap(c, d);
-                            assert(a != c && b != c);
+                            myassert(a != c && b != c);
 #ifdef SLIC3R_DEBUG
                             successive = true;
 #endif /* SLIC3R_DEBUG */
@@ -806,14 +811,14 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
 #ifdef SLIC3R_DEBUG
                         else if (b == d) {
                             // The segments iSegment1 and iSegment2 are directly connected.
-                            assert(iContour1 == iContour2);
-                            assert(iSegment1 == iPrev2 || iPrev1 == iSegment2);
-                            assert(a != c && b != c);
+                            myassert(iContour1 == iContour2);
+                            myassert(iSegment1 == iPrev2 || iPrev1 == iSegment2);
+                            myassert(a != c && b != c);
                             successive = true;
                         }
 #endif /* SLIC3R_DEBUG */
                         Orientation o = orient(*a, *b, *c);
-                        assert(o != ORIENTATION_COLINEAR);
+                        myassert(o != ORIENTATION_COLINEAR);
                         swap = upper_more_left != (o == ORIENTATION_CW);
 #ifdef SLIC3R_DEBUG
                         if (swap)
@@ -855,7 +860,7 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
 #ifdef SLIC3R_DEBUG
                 size_t iSegment2 = sil.intersections[j-1].iSegment;
                 size_t iPrev2    = ((iSegment2 == 0) ? contour.size() : iSegment2) - 1;
-                assert(iSegment == iPrev2 || iSegment2 == iPrev);
+                myassert(iSegment == iPrev2 || iSegment2 == iPrev);
 #endif /* SLIC3R_DEBUG */
             } else {
                 if (j < i)
@@ -873,18 +878,18 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
     for (size_t i_seg = 0; i_seg < segs.size(); ++ i_seg) {
         SegmentedIntersectionLine &sil = segs[i_seg];
         // The intersection points have to be even.
-        assert((sil.intersections.size() & 1) == 0);
+        myassert((sil.intersections.size() & 1) == 0);
         for (size_t i = 0; i < sil.intersections.size();) {
             // An intersection segment crossing the bigger contour may cross the inner offsetted contour even number of times.
-            assert(sil.intersections[i].type == SegmentIntersection::OUTER_LOW);
+            myassert(sil.intersections[i].type == SegmentIntersection::OUTER_LOW);
             size_t j = i + 1;
-            assert(j < sil.intersections.size());
-            assert(sil.intersections[j].type == SegmentIntersection::INNER_LOW || sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
+            myassert(j < sil.intersections.size());
+            myassert(sil.intersections[j].type == SegmentIntersection::INNER_LOW || sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
             for (; j < sil.intersections.size() && sil.intersections[j].is_inner(); ++ j) ;
-            assert(j < sil.intersections.size());
-            assert((j & 1) == 1);
-            assert(sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
-            assert(i + 1 == j || sil.intersections[j - 1].type == SegmentIntersection::INNER_HIGH);
+            myassert(j < sil.intersections.size());
+            myassert((j & 1) == 1);
+            myassert(sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
+            myassert(i + 1 == j || sil.intersections[j - 1].type == SegmentIntersection::INNER_HIGH);
             if (i + 1 == j) {
                 svg.draw(Line(Point(sil.pos, sil.intersections[i].pos), Point(sil.pos, sil.intersections[j].pos)), "blue");
             } else {
@@ -901,18 +906,18 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
     for (size_t i_seg = 0; i_seg < segs.size(); ++ i_seg) {
         SegmentedIntersectionLine &sil = segs[i_seg];
         // The intersection points have to be even.
-        assert((sil.intersections.size() & 1) == 0);
+        myassert((sil.intersections.size() & 1) == 0);
         for (size_t i = 0; i < sil.intersections.size();) {
             // An intersection segment crossing the bigger contour may cross the inner offsetted contour even number of times.
-            assert(sil.intersections[i].type == SegmentIntersection::OUTER_LOW);
+            myassert(sil.intersections[i].type == SegmentIntersection::OUTER_LOW);
             size_t j = i + 1;
-            assert(j < sil.intersections.size());
-            assert(sil.intersections[j].type == SegmentIntersection::INNER_LOW || sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
+            myassert(j < sil.intersections.size());
+            myassert(sil.intersections[j].type == SegmentIntersection::INNER_LOW || sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
             for (; j < sil.intersections.size() && sil.intersections[j].is_inner(); ++ j) ;
-            assert(j < sil.intersections.size());
-            assert((j & 1) == 1);
-            assert(sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
-            assert(i + 1 == j || sil.intersections[j - 1].type == SegmentIntersection::INNER_HIGH);
+            myassert(j < sil.intersections.size());
+            myassert((j & 1) == 1);
+            myassert(sil.intersections[j].type == SegmentIntersection::OUTER_HIGH);
+            myassert(i + 1 == j || sil.intersections[j - 1].type == SegmentIntersection::INNER_HIGH);
             i = j + 1;
         }
     }
@@ -936,14 +941,14 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
             for (size_t i_vline2 = 0; i_vline2 < segs.size(); ++ i_vline2) {
                 const SegmentedIntersectionLine &seg = segs[i_vline2];
                 if (! seg.intersections.empty()) {
-                    assert(seg.intersections.size() > 1);
+                    myassert(seg.intersections.size() > 1);
                     // Even number of intersections with the loops.
-                    assert((seg.intersections.size() & 1) == 0);
-                    assert(seg.intersections.front().type == SegmentIntersection::OUTER_LOW);
+                    myassert((seg.intersections.size() & 1) == 0);
+                    myassert(seg.intersections.front().type == SegmentIntersection::OUTER_LOW);
                     for (size_t i = 0; i < seg.intersections.size(); ++ i) {
                         const SegmentIntersection &intrsctn = seg.intersections[i];
                         if (intrsctn.is_outer()) {
-                            assert(intrsctn.is_low() || i > 0);
+                            myassert(intrsctn.is_low() || i > 0);
                             bool consumed = intrsctn.is_low() ? 
                                 intrsctn.consumed_vertical_up : 
                                 seg.intersections[i-1].consumed_vertical_up;
@@ -981,11 +986,11 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
         bool going_up = intrsctn->is_low();
         bool try_connect = false;
         if (going_up) {
-            assert(! intrsctn->consumed_vertical_up);
-            assert(i_intersection + 1 < seg.intersections.size());
+            myassert(! intrsctn->consumed_vertical_up);
+            myassert(i_intersection + 1 < seg.intersections.size());
             // Step back to the beginning of the vertical segment to mark it as consumed.
             if (intrsctn->is_inner()) {
-                assert(i_intersection > 0);
+                myassert(i_intersection > 0);
                 -- intrsctn;
                 -- i_intersection;
             }
@@ -994,25 +999,25 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                 intrsctn->consumed_vertical_up = true;
                 ++ intrsctn;
                 ++ i_intersection;
-                assert(i_intersection < seg.intersections.size());
+                myassert(i_intersection < seg.intersections.size());
             } while (intrsctn->type != SegmentIntersection::OUTER_HIGH);
             if ((intrsctn - 1)->is_inner()) {
                 // Step back.
                 -- intrsctn;
                 -- i_intersection;
-                assert(intrsctn->type == SegmentIntersection::INNER_HIGH);
+                myassert(intrsctn->type == SegmentIntersection::INNER_HIGH);
                 try_connect = true;
             }
         } else {
             // Going down.
-            assert(intrsctn->is_high());
-            assert(i_intersection > 0);
-            assert(! (intrsctn - 1)->consumed_vertical_up);
+            myassert(intrsctn->is_high());
+            myassert(i_intersection > 0);
+            myassert(! (intrsctn - 1)->consumed_vertical_up);
             // Consume the complete vertical segment up to the outer contour.
             if (intrsctn->is_inner())
                 intrsctn->consumed_vertical_up = true;
             do {
-                assert(i_intersection > 0);
+                myassert(i_intersection > 0);
                 -- intrsctn;
                 -- i_intersection;
                 intrsctn->consumed_vertical_up = true;
@@ -1021,7 +1026,7 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                 // Step back.
                 ++ intrsctn;
                 ++ i_intersection;
-                assert(intrsctn->type == SegmentIntersection::INNER_LOW);
+                myassert(intrsctn->type == SegmentIntersection::INNER_LOW);
                 try_connect = true;
             }
         }
@@ -1085,7 +1090,7 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
                         measure_perimeter_next_segment_length(poly_with_offset, segs, i_vline, intrsctn->iContour, i_intersection, iNext);
                     // Take the shorter path.
                     bool take_next = (iPrev != -1 && iNext != -1) ? (distNext < distPrev) : iNext != -1;
-                    assert(intrsctn->is_inner());
+                    myassert(intrsctn->is_inner());
                     pointLast = Point(seg.pos, intrsctn->pos);
                     polyline_current->points.push_back(pointLast);
                     emit_perimeter_prev_next_segment(poly_with_offset, segs, i_vline, intrsctn->iContour, i_intersection, take_next ? iNext : iPrev, *polyline_current, take_next);
@@ -1114,13 +1119,13 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
         }
         // Finish the current vertical line,
         // reset the current vertical line to pick a new starting point in the next round.
-        assert(intrsctn->is_outer());
-        assert(intrsctn->is_high() == going_up);
+        myassert(intrsctn->is_outer());
+        myassert(intrsctn->is_high() == going_up);
         pointLast = Point(seg.pos, intrsctn->pos);
         polyline_current->points.push_back(pointLast);
         // Handle duplicate points and zero length segments.
         polyline_current->remove_duplicate_points();
-        assert(! polyline_current->has_duplicate_points());
+        myassert(! polyline_current->has_duplicate_points());
         // Handle nearly zero length edges.
         if (polyline_current->points.size() <= 1 ||
         	(polyline_current->points.size() == 2 &&
@@ -1151,17 +1156,17 @@ void FillRectilinear2::fill_surface_by_lines(const Surface *surface, const FillP
     for (Polylines::iterator it = polylines_out.begin() + n_polylines_out_initial; it != polylines_out.end(); ++ it) {
         // No need to translate, the absolute position is irrelevant.
         // it->translate(- rotate_vector.second.x, - rotate_vector.second.y);
-        assert(! it->has_duplicate_points());
+        myassert(! it->has_duplicate_points());
         it->rotate(rotate_vector.first);
         //FIXME rather simplify the paths to avoid very short edges?
-        //assert(! it->has_duplicate_points());
+        //myassert(! it->has_duplicate_points());
         it->remove_duplicate_points();
     }
 
 #ifdef SLIC3R_DEBUG
     // Verify, that there are no duplicate points in the sequence.
     for (Polylines::iterator it = polylines_out.begin(); it != polylines_out.end(); ++ it)
-        assert(! it->has_duplicate_points());
+        myassert(! it->has_duplicate_points());
 #endif /* SLIC3R_DEBUG */
 }
 

@@ -1,4 +1,5 @@
 package Slic3r::Print::Object;
+# extends c++ class Slic3r::PrintObject (Print.xsp)
 use strict;
 use warnings;
 
